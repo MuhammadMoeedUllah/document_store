@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String?
+  password String?
+  orders   Orders[]
+}
+
+model Books {
+  id           Int         @id @default(autoincrement())
+  author       Authors[] 
+  authorId     Int
+  publisher    Publishers  @relation(fields: [publishersId], references: [id])
+  publishersId Int
+  Title        String
+  ISBN         String
+  Genre        String
+  PublishDate  DateTime
+  Price        Float
+  Condition    String
+  Inventory    Inventory?
+  orderItem    OrderItem[]
+}
+
+model Inventory {
+  book           Books @relation(fields: [bookId], references: [id])
+  bookId         Int   @unique
+  stockUsed      Int
+  stockAvailable Int
+  version        Int   @default(1)
+}
+
+model Authors {
+  authorId Int     @id @default(autoincrement())
+  fullName String
+  books    Books[]
+}
+
+model Publishers {
+  id      Int     @id @default(autoincrement())
+  country String
+  Books   Books[]
+}
+
+model OrderItem {
+  id            Int     @id @default(autoincrement())
+  book          Books   @relation(fields: [bookId], references: [id])
+  bookId        Int
+  price         Float
+  Quantity      Int
+  Orders        Orders? @relation(fields: [ordersOrderId], references: [orderId])
+  ordersOrderId Int?
+}
+
+model Orders {
+  orderId       Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  orderDate     DateTime
+  // address
+  streetAddress String
+  postalCode    Int
+  state         String
+  country       String
+  // pricing
+  subtotal      Float
+  shipping      Float
+  Total         Float
+  orderItems    OrderItem[]
+}
